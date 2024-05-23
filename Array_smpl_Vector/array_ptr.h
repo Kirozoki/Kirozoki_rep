@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 template <typename Type>
 class ArrayPtr {
 public:
@@ -26,6 +28,11 @@ public:
     // Запрещаем копирование
     ArrayPtr(const ArrayPtr&) = delete;
 
+    // Конструктор из временного объекта
+    ArrayPtr(ArrayPtr&& other) noexcept : raw_ptr_(other.raw_ptr_) {
+        other.raw_ptr_ = nullptr;
+    }
+
     ~ArrayPtr() {
         // Напишите деструктор самостоятельно
         delete[] raw_ptr_;
@@ -33,6 +40,13 @@ public:
 
     // Запрещаем присваивание
     ArrayPtr& operator=(const ArrayPtr&) = delete;
+
+    // Присваивание временного объекта
+    ArrayPtr& operator=(ArrayPtr&& other) noexcept {
+        delete[] raw_ptr_;
+        raw_ptr_ = other.Release(); 
+        return *this;
+    }
 
     // Прекращает владением массивом в памяти, возвращает значение адреса массива
     // После вызова метода указатель на массив должен обнулиться
@@ -46,13 +60,13 @@ public:
     // Возвращает ссылку на элемент массива с индексом index
     Type& operator[](size_t index) noexcept {
         // Реализуйте операцию самостоятельно
-        return *(raw_ptr_ + index);
+        return raw_ptr_[index];
     }
 
     // Возвращает константную ссылку на элемент массива с индексом index
     const Type& operator[](size_t index) const noexcept {
         // Реализуйте операцию самостоятельно
-        return const_cast<Type&>(*(raw_ptr_ + index));
+        return raw_ptr_[index];
     }
 
     // Возвращает true, если указатель ненулевой, и false в противном случае
@@ -78,4 +92,3 @@ public:
 private:
     Type* raw_ptr_ = nullptr;
 };
-
